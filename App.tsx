@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { Transaction } from './types';
 import { TransactionType } from './types';
@@ -25,6 +24,9 @@ const getInitialData = (): Transaction[] => {
     { id: '5', date: new Date(oneMonthAgo.getTime() + 86400000 * 10).toISOString().split('T')[0], description: 'Groceries', amount: 210.75, type: TransactionType.PERSONAL_EXPENSE, category: 'Groceries' },
     { id: '6', date: new Date(today.getTime() - 86400000 * 5).toISOString().split('T')[0], description: 'New Client Retainer', amount: 2000, type: TransactionType.REVENUE },
     { id: '7', date: new Date(today.getTime() - 86400000 * 2).toISOString().split('T')[0], description: 'Facebook Ads', amount: 300, type: TransactionType.BUSINESS_EXPENSE, category: 'Marketing' },
+    { id: '8', date: new Date(today.getTime() - 86400000 * 4).toISOString().split('T')[0], description: 'Invest in XYZ Stocks', amount: 1000, type: TransactionType.INVESTMENT, category: 'Stocks' },
+    { id: '9', date: new Date(today.getTime() - 86400000 * 3).toISOString().split('T')[0], description: 'Move to emergency fund', amount: 500, type: TransactionType.SAVINGS, category: 'Emergency Fund' },
+    { id: '10', date: new Date(today.getTime() - 86400000 * 1).toISOString().split('T')[0], description: 'Reinvest profits into marketing', amount: 450, type: TransactionType.REINVESTED_FUNDS },
   ];
 };
 

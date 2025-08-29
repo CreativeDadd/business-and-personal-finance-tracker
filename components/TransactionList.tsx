@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import type { Transaction } from '../types';
 import { TransactionType } from '../types';
@@ -16,6 +15,12 @@ const getTypeColor = (type: TransactionType) => {
       return 'bg-red-100 text-red-800';
     case TransactionType.PERSONAL_EXPENSE:
       return 'bg-orange-100 text-orange-800';
+    case TransactionType.INVESTMENT:
+      return 'bg-purple-100 text-purple-800';
+    case TransactionType.SAVINGS:
+      return 'bg-blue-100 text-blue-800';
+    case TransactionType.REINVESTED_FUNDS:
+      return 'bg-gray-200 text-gray-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -37,28 +42,38 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions }
       return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
   }, [transactions, filterType, sortOrder]);
+  
+  const filterOptions: string[] = ['all', ...Object.values(TransactionType)];
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-        <h2 className="text-xl font-bold text-gray-800">All Transactions</h2>
-        <div className="flex items-center gap-4">
-          <select 
-            value={filterType} 
-            onChange={e => setFilterType(e.target.value)}
-            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
-          >
-            <option value="all">All Types</option>
-            {Object.values(TransactionType).map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+      <div className="flex flex-col gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+          <h2 className="text-xl font-bold text-gray-800 mb-2 sm:mb-0">All Transactions</h2>
           <select 
             value={sortOrder} 
             onChange={e => setSortOrder(e.target.value as 'desc' | 'asc')}
-            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+            className="block w-full sm:w-auto pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
           >
             <option value="desc">Newest First</option>
             <option value="asc">Oldest First</option>
           </select>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 border-t border-gray-200 pt-4">
+          <span className="text-sm font-medium text-gray-600 mr-2">Filter by type:</span>
+          {filterOptions.map(option => (
+            <button
+              key={option}
+              onClick={() => setFilterType(option)}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
+                filterType === option
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {option === 'all' ? 'All' : option}
+            </button>
+          ))}
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -93,7 +108,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions }
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="text-center py-10 text-gray-500">No transactions found.</td>
+                <td colSpan={4} className="text-center py-10 text-gray-500">No transactions found for the selected filter.</td>
               </tr>
             )}
           </tbody>

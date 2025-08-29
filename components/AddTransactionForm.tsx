@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
-import type { Transaction, ExpenseCategory } from '../types';
-import { TransactionType, ExpenseCategories } from '../types';
+import type { Transaction, AllCategories } from '../types';
+import { TransactionType, ExpenseCategories, InvestmentCategories, SavingsCategories } from '../types';
 
 interface AddTransactionFormProps {
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
@@ -12,7 +11,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({ onAddTra
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState<TransactionType>(TransactionType.BUSINESS_EXPENSE);
-  const [category, setCategory] = useState<ExpenseCategory | ''>('');
+  const [category, setCategory] = useState<AllCategories | ''>('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -26,8 +25,15 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({ onAddTra
         setError('Please enter a valid, positive amount.');
         return;
     }
-    if (type !== TransactionType.REVENUE && !category) {
-        setError('Please select a category for expenses.');
+
+    const isOutflowWithCategory = 
+      type === TransactionType.BUSINESS_EXPENSE ||
+      type === TransactionType.PERSONAL_EXPENSE ||
+      type === TransactionType.INVESTMENT ||
+      type === TransactionType.SAVINGS;
+
+    if (isOutflowWithCategory && !category) {
+        setError('Please select a category for this transaction type.');
         return;
     }
 
@@ -36,7 +42,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({ onAddTra
       amount: numericAmount,
       date,
       type,
-      category: type !== TransactionType.REVENUE ? (category as ExpenseCategory) : undefined,
+      category: isOutflowWithCategory ? (category as AllCategories) : undefined,
     });
     
     // Reset form
@@ -46,6 +52,48 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({ onAddTra
     setType(TransactionType.BUSINESS_EXPENSE);
     setCategory('');
     setError(null);
+  };
+
+  const renderCategorySelect = () => {
+    let categories: readonly string[] = [];
+    let label = '';
+    let prompt = '';
+
+    switch (type) {
+      case TransactionType.BUSINESS_EXPENSE:
+      case TransactionType.PERSONAL_EXPENSE:
+        categories = ExpenseCategories;
+        label = 'Expense Category';
+        prompt = 'Select an expense category';
+        break;
+      case TransactionType.INVESTMENT:
+        categories = InvestmentCategories;
+        label = 'Investment Category';
+        prompt = 'Select an investment category';
+        break;
+      case TransactionType.SAVINGS:
+        categories = SavingsCategories;
+        label = 'Savings Category';
+        prompt = 'Select a savings category';
+        break;
+      default:
+        return null;
+    }
+
+    return (
+      <div>
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700">{label}</label>
+        <select
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value as AllCategories)}
+          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+        >
+          <option value="">{prompt}</option>
+          {categories.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+    );
   };
 
   return (
@@ -104,20 +152,7 @@ export const AddTransactionForm: React.FC<AddTransactionFormProps> = ({ onAddTra
               {Object.values(TransactionType).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-          {type !== TransactionType.REVENUE && (
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-              <select
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
-              >
-                <option value="">Select a category</option>
-                {ExpenseCategories.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-          )}
+          {renderCategorySelect()}
         </div>
         
         {error && <p className="text-sm text-error">{error}</p>}

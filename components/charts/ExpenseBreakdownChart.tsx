@@ -1,15 +1,14 @@
-
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import type { Transaction } from '../../types';
 import { TransactionType } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 
-interface ExpenseBreakdownChartProps {
+interface OutflowBreakdownChartProps {
   transactions: Transaction[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff4d4d', '#4dff4d', '#4d4dff'];
+const COLORS = ['#ef4444', '#f97316', '#8b5cf6', '#3b82f6', '#10b981', '#6b7280', '#ec4899', '#f59e0b'];
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -22,23 +21,24 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export const ExpenseBreakdownChart: React.FC<ExpenseBreakdownChartProps> = ({ transactions }) => {
+export const OutflowBreakdownChart: React.FC<OutflowBreakdownChartProps> = ({ transactions }) => {
   const data = useMemo(() => {
-    const expenseData = new Map<string, number>();
+    const outflowData = new Map<string, number>();
     transactions
-      .filter(t => t.type === TransactionType.BUSINESS_EXPENSE || t.type === TransactionType.PERSONAL_EXPENSE)
+      .filter(t => t.type !== TransactionType.REVENUE) // Filter for all outflows
       .forEach(t => {
-        const category = t.category || 'Uncategorized';
-        expenseData.set(category, (expenseData.get(category) || 0) + t.amount);
+        // Use the transaction type as the category if no specific category exists
+        const category = t.category || t.type;
+        outflowData.set(category, (outflowData.get(category) || 0) + t.amount);
       });
 
-    return Array.from(expenseData.entries()).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+    return Array.from(outflowData.entries()).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
   }, [transactions]);
 
   if (data.length === 0) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500">
-        <p>No expense data to display.</p>
+        <p>No outflow data to display.</p>
       </div>
     );
   }

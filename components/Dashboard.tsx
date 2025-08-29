@@ -1,10 +1,9 @@
-
 import React, { useMemo, useState } from 'react';
 import type { Transaction, TimePeriod } from '../types';
 import { TransactionType } from '../types';
 import { StatCard } from './StatCard';
 import { IncomeExpenseChart } from './charts/IncomeExpenseChart';
-import { ExpenseBreakdownChart } from './charts/ExpenseBreakdownChart';
+import { OutflowBreakdownChart } from './charts/ExpenseBreakdownChart';
 import { formatCurrency } from '../utils/currency';
 import { isWithinPeriod } from '../utils/dateUtils';
 
@@ -51,28 +50,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
     [transactions, timePeriod]
   );
 
-  const { totalRevenue, totalBusinessExpenses, totalPersonalExpenses, netIncome } = useMemo(() => {
+  const {
+    totalRevenue,
+    totalBusinessExpenses,
+    totalPersonalExpenses,
+    netIncome,
+    totalCapitalOutflows,
+    netCashFlow,
+  } = useMemo(() => {
     let totalRevenue = 0;
     let totalBusinessExpenses = 0;
     let totalPersonalExpenses = 0;
+    let totalInvestments = 0;
+    let totalSavings = 0;
+    let totalReinvested = 0;
     
     filteredTransactions.forEach(t => {
       switch (t.type) {
-        case TransactionType.REVENUE:
-          totalRevenue += t.amount;
-          break;
-        case TransactionType.BUSINESS_EXPENSE:
-          totalBusinessExpenses += t.amount;
-          break;
-        case TransactionType.PERSONAL_EXPENSE:
-          totalPersonalExpenses += t.amount;
-          break;
+        case TransactionType.REVENUE: totalRevenue += t.amount; break;
+        case TransactionType.BUSINESS_EXPENSE: totalBusinessExpenses += t.amount; break;
+        case TransactionType.PERSONAL_EXPENSE: totalPersonalExpenses += t.amount; break;
+        case TransactionType.INVESTMENT: totalInvestments += t.amount; break;
+        case TransactionType.SAVINGS: totalSavings += t.amount; break;
+        case TransactionType.REINVESTED_FUNDS: totalReinvested += t.amount; break;
       }
     });
     
     const netIncome = totalRevenue - totalBusinessExpenses;
+    const totalCapitalOutflows = totalInvestments + totalSavings + totalReinvested;
+    const totalOutflows = totalBusinessExpenses + totalPersonalExpenses + totalCapitalOutflows;
+    const netCashFlow = totalRevenue - totalOutflows;
 
-    return { totalRevenue, totalBusinessExpenses, totalPersonalExpenses, netIncome };
+    return { totalRevenue, totalBusinessExpenses, totalPersonalExpenses, netIncome, totalCapitalOutflows, netCashFlow };
   }, [filteredTransactions]);
 
   return (
@@ -82,21 +91,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         <PeriodSelector selectedPeriod={timePeriod} onPeriodChange={setTimePeriod} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard title="Total Revenue" value={formatCurrency(totalRevenue)} colorClass="#22c55e" />
         <StatCard title="Net Income (Business)" value={formatCurrency(netIncome)} colorClass="#3b82f6" description="Revenue - Biz Expenses" />
+        <StatCard title="Net Cash Flow" value={formatCurrency(netCashFlow)} colorClass="#10b981" description="Revenue - All Outflows" />
         <StatCard title="Business Expenses" value={formatCurrency(totalBusinessExpenses)} colorClass="#ef4444" />
         <StatCard title="Personal Expenses" value={formatCurrency(totalPersonalExpenses)} colorClass="#f97316" />
+        <StatCard title="Capital Outflows" value={formatCurrency(totalCapitalOutflows)} colorClass="#8b5cf6" description="Investments, Savings etc." />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-md">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Income vs Expenses Trend</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Income vs Outflows Trend</h3>
           <IncomeExpenseChart transactions={filteredTransactions} timePeriod={timePeriod} />
         </div>
         <div className="bg-white p-6 rounded-xl shadow-md">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Expense Breakdown</h3>
-          <ExpenseBreakdownChart transactions={filteredTransactions} />
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Outflow Breakdown</h3>
+          <OutflowBreakdownChart transactions={filteredTransactions} />
         </div>
       </div>
     </div>

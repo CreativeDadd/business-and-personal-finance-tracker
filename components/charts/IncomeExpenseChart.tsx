@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import type { Transaction, TimePeriod } from '../../types';
@@ -39,7 +38,7 @@ const getLocalDate = (isoDate: string): Date => {
 
 export const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({ transactions, timePeriod }) => {
   const data = useMemo(() => {
-    const dataMap: { [key: string]: { revenue: number, expenses: number } } = {};
+    const dataMap: { [key: string]: { revenue: number, outflows: number } } = {};
 
     const getGroupKey = (date: Date): string => {
         switch (timePeriod) {
@@ -59,12 +58,12 @@ export const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({ transact
       const date = getLocalDate(t.date);
       const key = getGroupKey(date);
       if (!dataMap[key]) {
-        dataMap[key] = { revenue: 0, expenses: 0 };
+        dataMap[key] = { revenue: 0, outflows: 0 };
       }
       if (t.type === TransactionType.REVENUE) {
         dataMap[key].revenue += t.amount;
       } else {
-        dataMap[key].expenses += t.amount;
+        dataMap[key].outflows += t.amount;
       }
     });
 
@@ -91,7 +90,7 @@ export const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({ transact
     return sortedKeys.map(key => ({
       name: key,
       Revenue: dataMap[key].revenue,
-      Expenses: dataMap[key].expenses,
+      'Total Outflows': dataMap[key].outflows,
     }));
   }, [transactions, timePeriod]);
   
@@ -112,7 +111,7 @@ export const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({ transact
         <Tooltip content={<CustomTooltip />} />
         <Legend />
         <Line type="monotone" dataKey="Revenue" stroke="#22c55e" strokeWidth={2} activeDot={{ r: 8 }} />
-        <Line type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={2} activeDot={{ r: 8 }} />
+        <Line type="monotone" dataKey="Total Outflows" name="Total Outflows" stroke="#ef4444" strokeWidth={2} activeDot={{ r: 8 }} />
       </LineChart>
     </ResponsiveContainer>
   );

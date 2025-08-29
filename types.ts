@@ -1,8 +1,10 @@
-
 export enum TransactionType {
   REVENUE = 'Revenue',
   BUSINESS_EXPENSE = 'Business Expense',
   PERSONAL_EXPENSE = 'Personal Expense',
+  INVESTMENT = 'Investment',
+  SAVINGS = 'Savings',
+  REINVESTED_FUNDS = 'Reinvested Funds',
 }
 
 export const ExpenseCategories = [
@@ -12,7 +14,21 @@ export const ExpenseCategories = [
   'Groceries', 'Rent/Mortgage', 'Utilities (Personal)', 'Entertainment', 'Transportation', 'Healthcare', 'Shopping'
 ] as const;
 
+export const InvestmentCategories = [
+    'Bonds', 'Stocks', 'Forex', 'New Ventures', 'Other'
+] as const;
+
+export const SavingsCategories = [
+    'Short-term', 'Long-term', 'Emergency Fund'
+] as const;
+
+
 export type ExpenseCategory = typeof ExpenseCategories[number];
+export type InvestmentCategory = typeof InvestmentCategories[number];
+export type SavingsCategory = typeof SavingsCategories[number];
+
+export type AllCategories = ExpenseCategory | InvestmentCategory | SavingsCategory;
+
 
 export interface Transaction {
   id: string;
@@ -20,7 +36,7 @@ export interface Transaction {
   description: string;
   amount: number;
   type: TransactionType;
-  category?: ExpenseCategory;
+  category?: AllCategories;
 }
 
 export type TimePeriod = 'day' | 'week' | 'month' | 'all';
